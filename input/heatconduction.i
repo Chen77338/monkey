@@ -7,13 +7,14 @@
     [temperature]
         order = FIRST
         family = LAGRANGE
+        initial_condition = 1000
     []
 []
 
 [Functions]
     [axial_heat]
         type = ParsedFunction
-        expression = 3.3*10e6*cos(z/0.25*pi)
+        expression = 2.3*10e6*cos(z/0.25*pi)
     []
 []
         
@@ -27,6 +28,10 @@
         type = BodyForce
         variable = temperature
         function = axial_heat
+    []    
+    [time]
+        type = HeatConductionTimeDerivative
+        variable = temperature
     []
 []
 
@@ -39,12 +44,17 @@
     []
 []
 
-[Materials]
-    [thermal_conductivity]
-        type = GenericConstantMaterial
+[Materials]   
+    [thermal_parameter]
+        type = HeatConductionMaterial
         block = '1'
-        prop_names = 'thermal_conductivity'
-        prop_values = '23.07'
+        specific_heat = 148
+        thermal_conductivity = 23.07
+    []
+    [density_material]
+        type = ParsedMaterial
+        property_name = density
+        expression = 1.626e4
     []
 []
 
@@ -52,8 +62,11 @@
     type = FEProblem
 []
 
-[Executioner]
-    type = Steady       # Steady state problem
+[Executioner]           
+    type = Transient   
+    start_time = 0  
+    end_time = 5
+    dt = 0.25
     solve_type = NEWTON # Perform a Newton solve, uses AD to compute Jacobian terms
     petsc_options_iname = '-pc_type -pc_hypre_type' # PETSc option pairs with values below
     petsc_options_value = 'hypre boomeramg'
